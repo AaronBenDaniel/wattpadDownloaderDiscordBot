@@ -44,92 +44,97 @@ async def on_message(message):  # Ignore messages sent by the bot
     try:  # Is the message content an integer
         int(message.content)
 
-        #determine what type of ID the number is
+        # determine what type of ID the number is
         try:  # Is it a valid Story ID
             metadata = getStoryInfo(message.content)
-            ID = message.content
+            storyID = message.content
             isStoryID = True
         except:
             isStoryID = False
 
         try:  # Is it a valid Part ID
-            ID = getStoryID(message.content)
+            getStoryID(message.content)
+            partID = message.content
             isPartID = True
         except:
             isPartID = False
 
-    except: # Maybe it's a Wattpad link
+    except:  # Maybe it's a Wattpad link
         try:
-            link=message.content[message.content.find("wattpad.com/")+12:]
-            link=link[:link.find("-")]
-        except: # Not a valid link
+            link = message.content[message.content.find("wattpad.com/") + 12 :]
+            link = link[: link.find("-")]
+        except:  # Not a valid link
             return
-        try: # Is it a Part Link
+        try:  # Is it a Part Link
             int(link)
-            ID=getStoryID(link)
-            isPartID=True
-            isStoryID=False
-        except: # Maybe it's a Story Link
+            partID = link
+            isPartID = True
+            isStoryID = False
+        except:  # Maybe it's a Story Link
             try:
-                link=link[6:]
-                ID=link
-                isPartID=False
-                isStoryID=True
-                metadata = getStoryInfo(ID)
-            except: # Catch-all
+                link = link[6:]
+                storyID = link
+                isPartID = False
+                isStoryID = True
+                metadata = getStoryInfo(storyID)
+            except:  # Catch-all
+                print("test")
                 return
 
-    if isStoryID:
+    def constructButtons(ID):
+        downloadButton = discord.ui.Button(
+            label="Download this story",
+            style=discord.ButtonStyle.primary,
+            url=APIEndpoint + "/download/" + ID,
+        )
+        linkButton = discord.ui.Button(
+            label="View this story on Wattpad",
+            url="https://wattpad.com/story/" + ID,
+        )
+        return [downloadButton, linkButton]
 
-        # Get info
+    def constructEmbed(isPart, metadata):
         metadata = loads(metadata)
         title = metadata["title"]
         author = metadata["user"]["username"]
         cover = metadata["cover"]
 
-        # Send embed
         embedVar = discord.Embed(
-            title="Story ID",
+            title="Part ID" if isPart else "Story ID",
             description="",
             color=0xFF6122,
         )
         embedVar.set_thumbnail(url=cover)
         embedVar.add_field(name="Title", value=title, inline=True)
         embedVar.add_field(name="Author", value=author, inline=True)
-        await message.channel.send(embed=embedVar)
 
-        # Send button
-        button = discord.ui.Button(
-            label="Download this story",
-            url=APIEndpoint + "/download/" + ID,
+        return embedVar
+
+    if isStoryID:
+
+        # Send embed
+        await message.channel.send(embed=constructEmbed(False,metadata))
+
+        # Send buttons
+        buttons = constructButtons(storyID)
+        await message.channel.send(
+            view=discord.ui.View().add_item(buttons[0]).add_item(buttons[1])
         )
-        await message.channel.send(view=discord.ui.View().add_item(button))
 
     if isPartID:
 
         # Get info
-        metadata = getStoryInfo(ID)
-        metadata = loads(metadata)
-        title = metadata["title"]
-        author = metadata["user"]["username"]
-        cover = metadata["cover"]
+        partID = getStoryID(partID)
+        metadata = getStoryInfo(partID)
 
         # Send embed
-        embedVar = discord.Embed(
-            title="Part ID",
-            description="",
-            color=0xFF6122,
-        )
-        embedVar.set_thumbnail(url=cover)
-        embedVar.add_field(name="Title", value=title, inline=True)
-        embedVar.add_field(name="Author", value=author, inline=True)
-        await message.channel.send(embed=embedVar)
+        await message.channel.send(embed=constructEmbed(True,metadata))
 
-        # Send button
-        button = discord.ui.Button(
-            label="Download this story", url=APIEndpoint + "/download/" + ID
+        # Send buttons
+        buttons = constructButtons(partID)
+        await message.channel.send(
+            view=discord.ui.View().add_item(buttons[0]).add_item(buttons[1])
         )
-        await message.channel.send(view=discord.ui.View().add_item(button))
 
 
 client.run(botToken)
