@@ -4,7 +4,7 @@ Download Wattpad Books straight from Discord. Accompanies the [WattpadDownloader
 
 Supports Links and IDs.
 
-Add the bot [here](https://discord.com/oauth2/authorize?client_id=1292173380065296395&permissions=274878285888&scope=bot applications.commands).
+Add the bot [here](https://discord.com/oauth2/authorize?client_id=1292173380065296395&permissions=274878285888&scope=bot%20applications.commands).
 
 ![](./images/demo.png)
 
