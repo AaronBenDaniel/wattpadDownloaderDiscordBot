@@ -13,20 +13,16 @@ def getStoryInfo(ID):
     content = requests.get(
         f"{APIEndpoint}/get_info/{ID}/v3stories/title,user(username)"
     )
-    content = content.text
-    if content == "HTTP Error 400: Bad Request":
-        raise (ValueError)
-        return
-    return content
+    if content.status_code == 200:
+        return content.text
+    raise (ValueError)
 
 
 def getStoryID(ID):
     content = requests.get(f"{APIEndpoint}/get_info/{ID}/getstoryid/url")
-    content = content.text
-    if content == "HTTP Error 400: Bad Request":
-        raise (ValueError)
-        return
-    return content
+    if content.status_code == 200:
+        return content.text
+    raise (ValueError)
 
 
 intents = discord.Intents.default()
@@ -39,7 +35,6 @@ client = discord.Client(intents=intents)
 async def on_ready():
     print(f"Logged in as {client.user}")
 
-
 @client.event
 async def on_message(message):  # Ignore messages sent by the bot
     if message.author == client.user:
@@ -50,30 +45,50 @@ async def on_message(message):  # Ignore messages sent by the bot
     except:
         return
 
-    try:  # Try to get story info
+    try: # Is it a valid Story ID
         metadata = getStoryInfo(message.content)
+        isStoryID = True
+    except:
+        isStoryID = False
+
+    try: # Is it a valid Part ID
+        ID = getStoryID(message.content)
+        isPartID = True
+    except:
         isPartID = False
-        ID = message.content
-    except:  # Maybe it's a Part ID
-        try:
-            ID = getStoryID(message.content)
-            metadata = getStoryInfo(ID)
-            isPartID = True
-        except:  # It's just a random number
-            return
+
+    if isPartID and not isStoryID: # If it's only a Part ID
+        metadata = getStoryInfo(ID)
+
+    if not isStoryID and not isPartID: # If it's isn't a valid Story or Part ID
+        return
+
+    if isStoryID and isPartID: # If it's both a Part and Story ID
+        isBoth = True
+    else:
+        isBoth = False
 
     metadata = loads(metadata)
 
     title = metadata["title"]
     author = metadata["user"]["username"]
 
-    response = (
-        f"`{message.content}` is a "
-        + ("Part" if isPartID else "Story")
-        + f" ID for the book `{title}` by `{author}`"
-    )
+    if not isBoth:
+        response = (
+            f"`{message.content}` is a "
+            + ("Part" if isPartID else "Story")
+            + f" ID for the book `{title}` by `{author}`"
+        )
+    else:
+        response = f"`{message.content}` is a Story ID for the book `{title}` by `{author}`"
+        
+        metadata = getStoryInfo(ID)
+        metadata = loads(metadata)
+        title = metadata["title"]
+        author = metadata["user"]["username"]
+        response = response + f" **AND** a Part ID for the book `{title}` by `{author}`"
 
     await message.channel.send(response)
 
-
 client.run(botToken)
+
