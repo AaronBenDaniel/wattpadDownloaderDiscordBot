@@ -113,7 +113,7 @@ async def on_message(message):  # Ignore messages sent by the bot
     if isStoryID:
 
         # Send embed
-        await message.channel.send(embed=constructEmbed(False,metadata))
+        await message.channel.send(embed=constructEmbed(False, metadata))
 
         # Send buttons
         buttons = constructButtons(storyID)
@@ -128,7 +128,7 @@ async def on_message(message):  # Ignore messages sent by the bot
         metadata = getStoryInfo(partID)
 
         # Send embed
-        await message.channel.send(embed=constructEmbed(True,metadata))
+        await message.channel.send(embed=constructEmbed(True, metadata))
 
         # Send buttons
         buttons = constructButtons(partID)
