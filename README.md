@@ -1,6 +1,6 @@
 # Wattpad Downloader Discord Bot
 
-A Discord bot that sends an embed with a story's info and a link to download it in response to an ID and Wattpad link
+A Discord bot that sends an embed with a story's info and a link to download it in response to an ID or Wattpad link
 
 It is designed to interact with [Wattpad Downloader](https://github.com/AaronBenDaniel/WattpadDownloader)
 
