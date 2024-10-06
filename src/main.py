@@ -93,7 +93,9 @@ class MessageToStoryCog(commands.Cog):
         if message.author.bot:
             return
 
+
         matches = set(re.findall(self.pattern, message.content))
+  
         if not matches:
             return
 
