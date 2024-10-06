@@ -26,7 +26,7 @@ class MessageToStoryCog(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.pattern = re.compile(r"\d+")
+        self.pattern = re.compile(r"\d+|wattpad.com/story/\d+|wattpad.com/\d+")
         self.headers = {"user-agent": "WPDBot"}
         self.host = "https://wpd.rambhat.la"  # Note: If you're selfhosting a wpd instance, place its URL here
         self.host = self.host.rstrip("/")  # Remove trailing slash
@@ -93,61 +93,82 @@ class MessageToStoryCog(commands.Cog):
         if message.author.bot:
             return
 
-        matches = [int(i) for i in re.findall(self.pattern, message.content)]
+        matches = set(re.findall(self.pattern, message.content))
         if not matches:
             return
 
         for match in matches:
 
-            try:
-                # Part
-                data = (await self.get_story_from_part(match))["group"]
-                embed, download_url = self.create_embed(data)
-                to_react = await message.reply(
-                    embed=embed,
-                    components=[
-                        disnake.ui.Button(
-                            label="Download",
-                            url=download_url,
-                            style=disnake.ButtonStyle.primary,
-                        ),
-                        disnake.ui.Button(
-                            label="Add the Bot",
-                            url="https://discord.com/oauth2/authorize?client_id=1292173380065296395&permissions=274878285888&scope=bot%20applications.commands",
-                            style=disnake.ButtonStyle.green,
-                        ),
-                    ],
-                )
-                await to_react.add_reaction("👍")
-                await to_react.add_reaction("👎")
+            try:  # Is it a raw ID
+                int(match)
+                isPart = True
+                isStory = True
+            except:
+                try:  # Is it a part link
+                    match = match[12:]
+                    int(match)
+                    isPart = True
+                    isStory = False
+                except:
+                    try:  # Is it a story link
+                        match = match[6:]
+                        int(match)
+                        isPart = False
+                        isStory = True
+                    except:  # Catch-all
+                        return
 
-            except aiohttp.ClientResponseError:
-                pass
+            if isPart:
+                try:
+                    # Part
+                    data = (await self.get_story_from_part(match))["group"]
+                    embed, download_url = self.create_embed(data)
+                    to_react = await message.reply(
+                        embed=embed,
+                        components=[
+                            disnake.ui.Button(
+                                label="Download",
+                                url=download_url,
+                                style=disnake.ButtonStyle.primary,
+                            ),
+                            disnake.ui.Button(
+                                label="Add the Bot",
+                                url="https://discord.com/oauth2/authorize?client_id=1292173380065296395&permissions=274878285888&scope=bot%20applications.commands",
+                                style=disnake.ButtonStyle.green,
+                            ),
+                        ],
+                    )
+                    await to_react.add_reaction("👍")
+                    await to_react.add_reaction("👎")
 
-            try:
-                # Story
-                data = await self.get_story(match)
-                embed, download_url = self.create_embed(data)
-                to_react = await message.reply(
-                    embed=embed,
-                    components=[
-                        disnake.ui.Button(
-                            label="Download",
-                            url=download_url,
-                            style=disnake.ButtonStyle.primary,
-                        ),
-                        disnake.ui.Button(
-                            label="Add the Bot",
-                            url="https://discord.com/oauth2/authorize?client_id=1292173380065296395&permissions=274878285888&scope=bot%20applications.commands",
-                            style=disnake.ButtonStyle.green,
-                        ),
-                    ],
-                )
-                await to_react.add_reaction("👍")
-                await to_react.add_reaction("👎")
+                except aiohttp.ClientResponseError:
+                    pass
 
-            except aiohttp.ClientResponseError:
-                pass
+            if isStory:
+                try:
+                    # Story
+                    data = await self.get_story(match)
+                    embed, download_url = self.create_embed(data)
+                    to_react = await message.reply(
+                        embed=embed,
+                        components=[
+                            disnake.ui.Button(
+                                label="Download",
+                                url=download_url,
+                                style=disnake.ButtonStyle.primary,
+                            ),
+                            disnake.ui.Button(
+                                label="Add the Bot",
+                                url="https://discord.com/oauth2/authorize?client_id=1292173380065296395&permissions=274878285888&scope=bot%20applications.commands",
+                                style=disnake.ButtonStyle.green,
+                            ),
+                        ],
+                    )
+                    await to_react.add_reaction("👍")
+                    await to_react.add_reaction("👎")
+
+                except aiohttp.ClientResponseError:
+                    pass
 
 
 class Commands(commands.Cog):
