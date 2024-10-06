@@ -112,6 +112,11 @@ class MessageToStoryCog(commands.Cog):
                             style=disnake.ButtonStyle.primary,
                         ),
                         disnake.ui.Button(
+                            label="Wattpad",
+                            url=f"https://wattpad.com/story/{data['id']}",
+                            style=disnake.ButtonStyle.primary,
+                        ),
+                        disnake.ui.Button(
                             label="Add the Bot",
                             url="https://discord.com/oauth2/authorize?client_id=1292173380065296395&permissions=274878285888&scope=bot%20applications.commands",
                             style=disnake.ButtonStyle.green,
@@ -134,6 +139,11 @@ class MessageToStoryCog(commands.Cog):
                         disnake.ui.Button(
                             label="Download",
                             url=download_url,
+                            style=disnake.ButtonStyle.primary,
+                        ),
+                        disnake.ui.Button(
+                            label="Wattpad",
+                            url=f"https://wattpad.com/story/{data['id']}",
                             style=disnake.ButtonStyle.primary,
                         ),
                         disnake.ui.Button(
